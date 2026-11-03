@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mis Préstamos - Control de Cobranzas</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#1B6B4A">
+<style>
+:root {
+  --bg: #F5F1EB;
+  --bg-soft: #EDE8E0;
+  --card: #FFFFFF;
+  --tx: #1A1F1C;
+  --mut: #6B756F;
+  --ac: #1B6B4A;
+  --ac-soft: #E6F2EC;
+  --acx: #FFFFFF;
+  --ok: #1B6B4A;
+  --warn: #B86E1E;
+  --bad: #C23B3B;
+  --bd: #E5DFD6;
+  --shadow: 0 4px 24px rgba(26, 31, 28, 0.06), 0 1px 3px rgba(26, 31, 28, 0.04);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+  --glass: rgba(255, 255, 255, 0.78);
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+:root[data-theme="dark"] {
+  --bg: #121614;
+  --bg-soft: #1C221F;
+  --card: #1A211D;
+  --tx: #F0F2F0;
+  --mut: #9AA59D;
+  --ac: #3D9B6E;
+  --ac-soft: #1E3328;
+  --acx: #0A120E;
+  --ok: #3D9B6E;
+  --warn: #E09A3E;
+  --bad: #E86A6A;
+  --bd: #2A332E;
+  --shadow: 0 4px 24px rgba(0,0,0,0.28);
+  --glass: rgba(26, 33, 29, 0.78);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121614;
+    --bg-soft: #1C221F;
+    --card: #1A211D;
+    --tx: #F0F2F0;
+    --mut: #9AA59D;
+    --ac: #3D9B6E;
+    --ac-soft: #1E3328;
+    --acx: #0A120E;
+    --ok: #3D9B6E;
+    --warn: #E09A3E;
+    --bad: #E86A6A;
+    --bd: #2A332E;
+    --shadow: 0 4px 24px rgba(0,0,0,0.28);
+    --glass: rgba(26, 33, 29, 0.78);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--tx);
+  font: 16px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 18px 18px 120px;
+}
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--bd);
+}
+.mut { color: var(--mut); font-size: 0.9rem; }
+.num {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ok);
+  line-height: 1.1;
+  margin: 4px 0 8px;
+}
+.num.neg, .neg { color: var(--bad); }
+.num.warn, .warn { color: var(--warn); }
+.num-ok { color: var(--ok); }
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--bd);
+}
+.row:last-child { border-bottom: 0; }
+.row b { font-weight: 600; }
+.f { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+.f-wrap { flex-wrap: wrap; }
+input, select, textarea {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--tx);
+  background: var(--bg);
+  border: 1.5px solid var(--bd);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  min-width: 0;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--ac); }
+button {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 20px;
+  background: var(--ac);
+  color: var(--acx);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+button:active { transform: scale(0.97); }
+button.sec { background: transparent; color: var(--ac); border: 1.5px solid var(--bd); }
+button.sec:hover { background: var(--ac-soft); border-color: var(--ac); }
+button.x, button.ghost { background: transparent; color: var(--mut); padding: 6px 10px; border-radius: 8px; }
+button.wa-btn { background: #25D366; color: #FFF; border: none; }
+nav {
+  position: fixed;
+  left: 12px; right: 12px; margin: 0 auto;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  max-width: 436px;
+  display: flex;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--bd);
+  border-radius: 32px;
+  padding: 4px;
+  gap: 2px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+}
+nav button {
+  flex: 1;
+  background: transparent;
+  color: var(--mut);
+  border-radius: 24px;
+  padding: 10px 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+nav button.on { background: var(--ac-soft); color: var(--ac); }
+.fab {
+  position: fixed; right: 20px; bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  width: 58px; height: 58px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--ac); color: var(--acx);
+  font-size: 30px; font-weight: 300; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+  z-index: 11;
+}
+.toast {
+  position: fixed; left: 16px; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  background: var(--tx); color: var(--bg); padding: 12px 16px; border-radius: 12px;
+  font-weight: 600; z-index: 50; max-width: 420px; margin: 0 auto; text-align: center;
+}
+.badge {
+  display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;
+}
+.b-ok { background: var(--ac-soft); color: var(--ok); }
+.b-warn { background: #FFF4E5; color: var(--warn); }
+.b-bad { background: #FDE8E8; color: var(--bad); }
+.bar { height: 8px; border-radius: 99px; background: var(--bd); overflow: hidden; margin: 6px 0; }
+.bar i { display: block; height: 100%; background: var(--ok); border-radius: 99px; }
+.kchip {
+  width: 38px; height: 38px; border-radius: 12px; display: inline-flex;
+  align-items: center; justify-content: center; font-size: 1.15rem; flex: none;
+  background: var(--ac-soft);
+}
+.copyright { text-align: center; font-size: 12px; color: var(--mut); margin: 24px 0 8px; }
+</style></head><body>
+<main id="app"></main>
+<nav>
+  <button data-t="cobros"><span>📅</span>Cobros</button>
+  <button data-t="prestamos"><span>📑</span>Préstamos</button>
+  <button data-t="clientes"><span>👥</span>Clientes</button>
+  <button data-t="caja"><span>💼</span>Caja</button>
+  <button data-t="ajustes"><span>⚙️</span>Ajustes</button>
+</nav>
+<button id="fab" class="fab" aria-label="Nuevo Préstamo">＋</button>
+
+<script>
+/* =====================================================================
+   01 · UTILIDADES FORMATOS, MATEMÁTICAS Y FECHAS
+   ===================================================================== */
+const MS_DIA = 864e5;
+const NOMBRES_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const dosDigitos = n => String(n).padStart(2, '0');
+const pesos = n => (Math.round(n) < 0 ? '-' : '') + '$' + Math.abs(Math.round(n)).toLocaleString('es-AR');
+const aNumero = v => +String(v).replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '') || 0;
+const escapar = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function numeroDeDia(iso) {
+  const [a, m, d] = (iso || '').slice(0, 10).split('-').map(Number);
+  return Date.UTC(a, m - 1, d) / MS_DIA;
+}
+const isoDeNumero = n => new Date(n * MS_DIA).toISOString().slice(0, 10);
+function hoyISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + dosDigitos(d.getMonth() + 1) + '-' + dosDigitos(d.getDate());
+}
+const diaYMes = iso => (iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '');
+const fechaLegible = iso => (iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) : '');
+
+/* =====================================================================
+   02 · MOTOR FINANCIERO DE PRÉSTAMOS
+   ===================================================================== */
+const CLAVE_STORAGE = 'mis_prestamos_pro_v1';
+const VERSION = '1.0.0';
+
+let S = cargarEstado();
+
+function estadoInicial() {
+  return {
+    cajaInicial: 1000000,
+    clientes: [
+      { id: 1, n: 'Juan Pérez', tel: '5491100000000', dni: '32456789', dir: 'Av. San Martín 1234', zona: 'Centro' },
+      { id: 2, n: 'María González', tel: '5491111111111', dni: '28765432', dir: 'Belgrano 450', zona: 'Norte' }
+    ],
+    prestamos: [],
+    pagos: [],
+    movimientosCaja: [],
+    nombreNegocio: 'Cobranzas & Préstamos',
+    pin: '',
+    salt: '',
+    tema: 'auto',
+    color: 'verde'
+  };
+}
+
+function cargarEstado() {
+  let g = null;
+  try { g = JSON.parse(localStorage.getItem(CLAVE_STORAGE)); } catch (_) {}
+  return g && g.prestamos ? g : estadoInicial();
+}
+
+function guardar() {
+  try { localStorage.setItem(CLAVE_STORAGE, JSON.stringify(S)); } catch (_) {}
+}
+
+/* Generador de cronograma de cuotas */
+function generarCuotas(prestamo) {
+  const cuotas = [];
+  const n = prestamo.numCuotas;
+  const monto = Math.round(prestamo.totalDevolver / n);
+  let fechaCursor = numeroDeDia(prestamo.fechaInicio);
+
+  for (let i = 1; i <= n; i++) {
+    if (prestamo.frecuencia === 'diario') {
+      fechaCursor += 1;
+      const diaSem = new Date(fechaCursor * MS_DIA).getUTCDay();
+      if (!prestamo.incluyeFinde && (diaSem === 0 || diaSem === 6)) {
+        if (diaSem === 6) fechaCursor += 2; // Salta al lunes
+        else if (diaSem === 0) fechaCursor += 1;
+      }
+    } else if (prestamo.frecuencia === 'semanal') {
+      fechaCursor += 7;
+    } else if (prestamo.frecuencia === 'quincenal') {
+      fechaCursor += 15;
+    } else if (prestamo.frecuencia === 'mensual') {
+      fechaCursor += 30;
+    }
+    cuotas.push({
+      num: i,
+      vence: isoDeNumero(fechaCursor),
+      monto: monto,
+      pagado: 0
+    });
+  }
+  return cuotas;
+}
+
+/* Cálculo general de balances */
+function calcularMetricas() {
+  const hoy = hoyISO();
+  let capitalPrestadoTotal = 0;
+  let capitalEnLaCalle = 0;
+  let totalCobrado = 0;
+  let interesesGanadosCobrados = 0;
+  let interesesEsperados = 0;
+  let cobrosHoyEsperados = 0;
+  let cobrosHoyEfectuados = 0;
+
+  const rutaCobroHoy = [];
+
+  S.prestamos.forEach(p => {
+    capitalPrestadoTotal += p.montoPrestado;
+    interesesEsperados += (p.totalDevolver - p.montoPrestado);
+
+    let pagadoPrestamo = 0;
+    (p.plan || []).forEach(cuota => {
+      pagadoPrestamo += (cuota.pagado || 0);
+
+      const debe = cuota.monto - (cuota.pagado || 0);
+      const esHoy = cuota.vence === hoy;
+      const atrasada = cuota.vence < hoy && debe > 0;
+
+      if (esHoy) {
+        cobrosHoyEsperados += cuota.monto;
+        cobrosHoyEfectuados += (cuota.pagado || 0);
+      }
+
+      if (debe > 0 && (esHoy || atrasada)) {
+        const cliente = S.clientes.find(c => c.id === p.clienteId) || { n: 'Cliente #' + p.clienteId };
+        rutaCobroHoy.push({
+          prestamoId: p.id,
+          cliente: cliente.n,
+          tel: cliente.tel,
+          numCuota: cuota.num,
+          totalCuotas: p.numCuotas,
+          vence: cuota.vence,
+          montoCuota: cuota.monto,
+          pagado: cuota.pagado || 0,
+          saldoCuota: debe,
+          esAtraso: atrasada,
+          diasAtraso: atrasada ? Math.round(numeroDeDia(hoy) - numeroDeDia(cuota.vence)) : 0
+        });
+      }
+    });
+
+    totalCobrado += pagadoPrestamo;
+    capitalEnLaCalle += Math.max(0, p.totalDevolver - pagadoPrestamo);
+    
+    // Proporción de ganancia en base a lo cobrado
+    const ratioInteres = (p.totalDevolver - p.montoPrestado) / (p.totalDevolver || 1);
+    interesesGanadosCobrados += pagadoPrestamo * ratioInteres;
+  });
+
+  const otrosIngresos = S.movimientosCaja.filter(m => m.tipo === 'ingreso').reduce((a, b) => a + b.monto, 0);
+  const otrosEgresos = S.movimientosCaja.filter(m => m.tipo === 'egreso').reduce((a, b) => a + b.monto, 0);
+
+  const cajaDisponible = (S.cajaInicial || 0) - capitalPrestadoTotal + totalCobrado + otrosIngresos - otrosEgresos;
+
+  return {
+    cajaDisponible,
+    capitalPrestadoTotal,
+    capitalEnLaCalle,
+    totalCobrado,
+    interesesEsperados,
+    interesesGanadosCobrados,
+    cobrosHoyEsperados,
+    cobrosHoyEfectuados,
+    rutaCobroHoy: rutaCobroHoy.sort((a,b) => (b.esAtraso ? 1 : 0) - (a.esAtraso ? 1 : 0))
+  };
+}
+
+/* =====================================================================
+   03 · SEGURIDAD (WebCrypto PBKDF2)
+   ===================================================================== */
+let autenticado = true;
+async function hashPin(pin, salt) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode('presta:' + pin), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' }, key, 256);
+  return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* =====================================================================
+   04 · EXPORTACIÓN DIRECTA (EXCEL .xlsx Y PDF 1.4 SIN LIBRERÍAS)
+   ===================================================================== */
+const aBytes = txt => new TextEncoder().encode(txt);
+const aBase64 = bytes => {
+  let b = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) b += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(b);
+};
+const TABLA_CRC = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = TABLA_CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function juntarBytes(lista) {
+  const total = lista.reduce((t, x) => t + x.length, 0), salida = new Uint8Array(total);
+  let pos = 0; lista.forEach(x => { salida.set(x, pos); pos += x.length; });
+  return salida;
+}
+function crearZip(archivos) {
+  const u16 = n => [n & 255, (n >> 8) & 255];
+  const u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+  const locales = [], centrales = []; let pos = 0;
+  archivos.forEach(a => {
+    const nombre = aBytes(a.n), crc = crc32(a.d), tam = a.d.length;
+    locales.push(Uint8Array.from([].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(crc), u32(tam), u32(tam), u16(nombre.length), u16(0))), nombre, a.d);
+    centrales.push(Uint8Array.from([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(crc), u32(tam), u32(tam), u16(nombre.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(pos))), nombre);
+    pos += 30 + nombre.length + tam;
+  });
+  const central = juntarBytes(centrales);
+  const fin = Uint8Array.from([].concat(u32(0x06054b50), u16(0), u16(0), u16(archivos.length), u16(archivos.length), u32(central.length), u32(pos), u16(0)));
+  return juntarBytes(locales.concat([central, fin]));
+}
+
+function generarExcelPréstamos() {
+  const xmlEsc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const filas = [
+    ['Mis Préstamos - Cartera de Créditos'],
+    ['Cliente', 'DNI', 'Teléfono', 'Capital', 'Interés %', 'Total a Devolver', 'Cobrado', 'Saldo Pendiente', 'Estado']
+  ];
+  S.prestamos.forEach(p => {
+    const cli = S.clientes.find(c => c.id === p.clienteId) || { n: 'Desconocido', dni: '-', tel: '-' };
+    const cobrado = (p.plan || []).reduce((a, b) => a + (b.pagado || 0), 0);
+    const saldo = Math.max(0, p.totalDevolver - cobrado);
+    filas.push([
+      cli.n, cli.dni, cli.tel, p.montoPrestado, p.tasa + '%', p.totalDevolver, cobrado, saldo, saldo === 0 ? 'Cancelado' : 'Activo'
+    ]);
+  });
+
+  const sheetData = filas.map((r, rowIdx) => `<row r="${rowIdx+1}">` + r.map((c, colIdx) => {
+    const ref = String.fromCharCode(65 + colIdx) + (rowIdx + 1);
+    const esNum = typeof c === 'number';
+    return esNum ? `<c r="${ref}"><v>${c}</v></c>` : `<c r="${ref}" t="inlineStr"><is><t>${xmlEsc(c)}</t></is></c>`;
+  }).join('') + '</row>').join('');
+
+  const ws = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetData}</sheetData></worksheet>`;
+  const wb = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Prestamos" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`;
+  const pkgRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const types = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`;
+
+  const zip = crearZip([
+    { n: '[Content_Types].xml', d: aBytes(types) },
+    { n: '_rels/.rels', d: aBytes(pkgRels) },
+    { n: 'xl/workbook.xml', d: aBytes(wb) },
+    { n: 'xl/_rels/workbook.xml.rels', d: aBytes(rels) },
+    { n: 'xl/worksheets/sheet1.xml', d: aBytes(ws) }
+  ]);
+
+  descargarArchivo('Cartera_Prestamos_' + hoyISO() + '.xlsx', zip, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+}
+
+function descargarArchivo(nombre, contenido, tipoMime) {
+  const blob = contenido instanceof Uint8Array ? new Blob([contenido], { type: tipoMime }) : new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* =====================================================================
+   05 · ESTADO DE INTERFAZ & NAVEGACIÓN
+   ===================================================================== */
+const UI = {
+  pestana: 'cobros',
+  modal: null,
+  clienteIdFiltro: null
+};
+
+function aviso(txt) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = txt;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+}
+
+/* =====================================================================
+   06 · VISTAS Y COMPONENTES
+   ===================================================================== */
+
+function renderCobros(m) {
+  const hoy = hoyISO();
+  const ruta = m.rutaCobroHoy;
+
+  let cobrosHtml = '';
+  if (!ruta.length) {
+    cobrosHtml = '<div class="card mut" style="text-align:center;padding:32px 16px">✅ No hay cobros pendientes para el día de hoy. ¡Ruta al día!</div>';
+  } else {
+    cobrosHtml = ruta.map(r => `
+      <div class="card" style="border-left: 6px solid ${r.esAtraso ? 'var(--bad)' : 'var(--ok)'}">
+        <div class="row">
+          <div>
+            <b>${escapar(r.cliente)}</b>
+            <div class="mut">${r.esAtraso ? `<span class="badge b-bad">Atraso ${r.diasAtraso}d</span> Cuota #${r.numCuota}/${r.totalCuotas}` : `<span class="badge b-ok">Para Hoy</span> Cuota #${r.numCuota}/${r.totalCuotas}`}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.25rem;font-weight:700;color:var(--tx)">${pesos(r.saldoCuota)}</div>
+            ${r.pagado > 0 ? `<div class="mut" style="font-size:12px">Abonado: ${pesos(r.pagado)}</div>` : ''}
+          </div>
+        </div>
+        <div class="f" style="margin-top:12px;margin-bottom:0">
+          <button data-a="cobrarCuota" data-p="${r.prestamoId}" data-c="${r.numCuota}" data-m="${r.saldoCuota}" style="flex:1">Cobrar ${pesos(r.saldoCuota)}</button>
+          <button class="sec" data-a="cobroParcial" data-p="${r.prestamoId}" data-c="${r.numCuota}" data-saldo="${r.saldoCuota}">Otro monto</button>
+          ${r.tel ? `<button class="wa-btn" data-a="recordarWp" data-tel="${r.tel}" data-cli="${escapar(r.cliente)}" data-m="${r.saldoCuota}" data-v="${diaYMes(r.vence)}" title="WhatsApp">💬</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  return `
+    <div class="card" style="background:linear-gradient(145deg, var(--card) 0%, var(--bg-soft) 100%)">
+      <div class="mut">Cobranza del día (${diaYMes(hoy)})</div>
+      <div class="num">${pesos(m.cobrosHoyEsperados)}</div>
+      <div class="row"><span>Cobrado hoy</span><b class="num-ok">${pesos(m.cobrosHoyEfectuados)}</b></div>
+      <div class="row"><span>Por cobrar</span><b class="${m.cobrosHoyEsperados - m.cobrosHoyEfectuados > 0 ? 'warn' : ''}">${pesos(Math.max(0, m.cobrosHoyEsperados - m.cobrosHoyEfectuados))}</b></div>
+    </div>
+    <h2>Ruta de cobro (${ruta.length})</h2>
+    ${cobrosHtml}
+  `;
+}
+
+function renderPrestamos(m) {
+  const lista = S.prestamos.map(p => {
+    const cli = S.clientes.find(c => c.id === p.clienteId) || { n: 'Cliente #' + p.clienteId };
+    const cobrado = (p.plan || []).reduce((a, b) => a + (b.pagado || 0), 0);
+    const saldo = Math.max(0, p.totalDevolver - cobrado);
+    const pct = Math.min(100, Math.round((cobrado / (p.totalDevolver || 1)) * 100));
+
+    return `
+      <div class="card">
+        <div class="row">
+          <div>
+            <b>${escapar(cli.n)}</b>
+            <div class="mut">Préstamo de ${pesos(p.montoPrestado)} al ${p.tasa}%</div>
+          </div>
+          <span class="badge ${saldo === 0 ? 'b-ok' : 'b-warn'}">${saldo === 0 ? 'Completado' : 'Activo'}</span>
+        </div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="row"><span>Cobrado: ${pesos(cobrado)} (${pct}%)</span><b>Resta: ${pesos(saldo)}</b></div>
+        <div class="f" style="margin-top:10px;margin-bottom:0">
+          <button class="sec" data-a="verPlan" data-id="${p.id}" style="width:100%">Ver Plan de Cuotas (${p.numCuotas})</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="row" style="margin-bottom:12px">
+      <h2>Préstamos Registrados (${S.prestamos.length})</h2>
+      <button data-a="modalNuevoPrestamo">Nuevo Préstamo</button>
+    </div>
+    ${lista || '<div class="card mut" style="text-align:center">No hay préstamos cargados todavía. Tocá "Nuevo Préstamo" o el botón ＋.</div>'}
+  `;
+}
+
+function renderClientes() {
+  const lista = S.clientes.map(c => `
+    <div class="card">
+      <div class="row">
+        <div>
+          <b>${escapar(c.n)}</b>
+          <div class="mut">DNI: ${escapar(c.dni || 'Sin DNI')} · Zona: ${escapar(c.zona || 'General')}</div>
+          ${c.dir ? `<div class="mut" style="font-size:12px">📍 ${escapar(c.dir)}</div>` : ''}
+        </div>
+        ${c.tel ? `<a href="https://wa.me/${c.tel.replace(/\D/g,'')}" target="_blank" class="badge b-ok" style="text-decoration:none;font-size:14px">WhatsApp</a>` : ''}
+      </div>
+      <div class="f" style="margin-top:10px;margin-bottom:0">
+        <button class="sec" data-a="editarCliente" data-id="${c.id}" style="flex:1">Editar</button>
+        <button class="sec" data-a="nuevoPrestamoPara" data-id="${c.id}" style="flex:1">Prestarle</button>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="row" style="margin-bottom:12px">
+      <h2>Clientes (${S.clientes.length})</h2>
+      <button data-a="modalNuevoCliente">Nuevo Cliente</button>
+    </div>
+    ${lista}
+  `;
+}
+
+function renderCaja(m) {
+  return `
+    <div class="card">
+      <div class="mut">Efectivo Disponible en Caja</div>
+      <div class="num ${m.cajaDisponible < 0 ? 'neg' : ''}">${pesos(m.cajaDisponible)}</div>
+      <div class="row"><span>Capital prestado (activo)</span><b>${pesos(m.capitalEnLaCalle)}</b></div>
+      <div class="row"><span>Total capital otorgado</span><b>${pesos(m.capitalPrestadoTotal)}</b></div>
+      <div class="row"><span>Intereses ganados cobrados</span><b class="num-ok">+${pesos(m.interesesGanadosCobrados)}</b></div>
+    </div>
+
+    <div class="card">
+      <h2>Ajustar Caja</h2>
+      <label>Capital de Caja Base</label>
+      <div class="f">
+        <input type="text" id="cajaBase" value="${S.cajaInicial || 0}" inputmode="decimal">
+        <button data-a="guardarCajaBase">Actualizar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Movimientos Extraordinarios</h2>
+      <div class="f">
+        <select id="movTipo"><option value="ingreso">Ingreso de Capital</option><option value="egreso">Retiro / Gasto</option></select>
+        <input type="text" id="movMonto" placeholder="Monto" inputmode="decimal">
+      </div>
+      <input type="text" id="movNota" placeholder="Concepto (ej: aporte de socio, combustible)" style="margin-bottom:10px">
+      <button data-a="registrarMovimiento" style="width:100%">Guardar Movimiento</button>
+    </div>
+  `;
+}
+
+function renderAjustes() {
+  return `
+    <div class="card">
+      <h2>Negocio y Datos</h2>
+      <label>Nombre de la Empresa / Cobranzas</label>
+      <input type="text" id="cfgNegocio" value="${escapar(S.nombreNegocio)}">
+      <button data-a="guardarNombreNegocio" style="margin-top:10px">Guardar Nombre</button>
+    </div>
+
+    <div class="card">
+      <h2>Exportar Información</h2>
+      <p class="mut">Descargá tu cartera completa en formato Excel nativo (.xlsx) para abrir directamente en la computadora.</p>
+      <button data-a="exportarExcel" style="width:100%">📗 Descargar Excel (.xlsx)</button>
+    </div>
+
+    <div class="card">
+      <h2>Copia de Seguridad</h2>
+      <p class="mut">Descargá tus datos para no perderlos si formateás tu teléfono.</p>
+      <div class="f f-wrap">
+        <button data-a="descargarBackup">☁️ Guardar Copia (JSON)</button>
+        <button class="sec" data-a="abrirRestaurar">📥 Restaurar Copia</button>
+      </div>
+      <input type="file" id="archivoBackup" accept=".json" style="display:none">
+    </div>
+
+    <div class="copyright">Mis Préstamos v${VERSION} · Sistema de Cobranzas Profesional</div>
+  `;
+}
+
+/* =====================================================================
+   07 · DIBUJADO PRINCIPAL Y ROUTER
+   ===================================================================== */
+function dibujar() {
+  const m = calcularMetricas();
+  const app = document.getElementById('app');
+
+  document.querySelectorAll('nav button').forEach(b => {
+    b.classList.toggle('on', b.dataset.t === UI.pestana);
+  });
+
+  if (UI.pestana === 'cobros') app.innerHTML = renderCobros(m);
+  else if (UI.pestana === 'prestamos') app.innerHTML = renderPrestamos(m);
+  else if (UI.pestana === 'clientes') app.innerHTML = renderClientes();
+  else if (UI.pestana === 'caja') app.innerHTML = renderCaja(m);
+  else if (UI.pestana === 'ajustes') app.innerHTML = renderAjustes();
+
+  const pie = document.createElement('div');
+  pie.className = 'copyright';
+  app.appendChild(pie);
+}
+
+/* =====================================================================
+   08 · MODALES & ACCIONES
+   ===================================================================== */
+
+function abrirModal(html) {
+  cerrarModal();
+  const m = document.createElement('div');
+  m.id = 'modal-flotante';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px';
+  m.innerHTML = `<div class="card" style="width:100%;max-width:440px;max-height:85vh;overflow-y:auto;margin:0">${html}</div>`;
+  m.onclick = e => { if (e.target === m) cerrarModal(); };
+  document.body.appendChild(m);
+  UI.modal = m;
+}
+
+function cerrarModal() {
+  if (UI.modal) { UI.modal.remove(); UI.modal = null; }
+}
+
+function modalNuevoPrestamo(clienteId = null) {
+  const opcionesClientes = S.clientes.map(c => `
+    <option value="${c.id}" ${c.id === clienteId ? 'selected' : ''}>${escapar(c.n)} (DNI: ${c.dni || '-'})</option>
+  `).join('');
+
+  const html = `
+    <h2>Nuevo Préstamo</h2>
+    <label>Cliente</label>
+    <select id="pCliente">${opcionesClientes}</select>
+    
+    <label>Monto a entregar (Capital)</label>
+    <input type="text" id="pMonto" placeholder="Ej: 50000" inputmode="decimal">
+    
+    <label>Tasa de Interés (% Total)</label>
+    <input type="text" id="pTasa" placeholder="Ej: 20" value="20" inputmode="decimal">
+    
+    <div class="row">
+      <div style="flex:1">
+        <label>Frecuencia de Cobro</label>
+        <select id="pFrecuencia">
+          <option value="diario">Diario</option>
+          <option value="semanal" selected>Semanal</option>
+          <option value="quincenal">Quincenal</option>
+          <option value="mensual">Mensual</option>
+        </select>
+      </div>
+      <div style="flex:1">
+        <label>Cantidad Cuotas</label>
+        <input type="number" id="pCuotas" value="4" min="1">
+      </div>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:8px;margin-top:10px">
+      <input type="checkbox" id="pFinde" checked> Cobrar también sábados y domingos (si es diario)
+    </label>
+
+    <label>Fecha de Entrega / Inicio</label>
+    <input type="date" id="pFecha" value="${hoyISO()}">
+
+    <div class="f" style="margin-top:18px">
+      <button class="sec" onclick="cerrarModal()">Cancelar</button>
+      <button data-a="crearPrestamoConfirmado" style="flex:1">Crear Préstamo</button>
+    </div>
+  `;
+  abrirModal(html);
+}
+
+function modalNuevoCliente() {
+  abrirModal(`
+    <h2>Nuevo Cliente</h2>
+    <label>Nombre y Apellido</label>
+    <input type="text" id="cNombre" placeholder="Ej: Mario Gómez">
+    <label>Teléfono (WhatsApp)</label>
+    <input type="text" id="cTel" placeholder="Ej: 5491133334444" inputmode="tel">
+    <label>DNI / Cédula</label>
+    <input type="text" id="cDni" placeholder="Número de documento">
+    <label>Dirección</label>
+    <input type="text" id="cDir" placeholder="Calle y número">
+    <label>Zona / Ruta</label>
+    <input type="text" id="cZona" placeholder="Ej: Centro / Barrio Norte">
+    <div class="f" style="margin-top:18px">
+      <button class="sec" onclick="cerrarModal()">Cancelar</button>
+      <button data-a="guardarClienteConfirmado" style="flex:1">Guardar</button>
+    </div>
+  `);
+}
+
+function modalPlanCuotas(prestamoId) {
+  const p = S.prestamos.find(x => x.id === prestamoId);
+  if (!p) return;
+  const cli = S.clientes.find(c => c.id === p.clienteId) || { n: 'Cliente' };
+
+  const filas = (p.plan || []).map(c => `
+    <div class="row">
+      <div>
+        <b>Cuota #${c.num}</b> <span class="mut">(${diaYMes(c.vence)})</span>
+        <div>${c.pagado >= c.monto ? '<span class="badge b-ok">Pagada</span>' : c.pagado > 0 ? '<span class="badge b-warn">Parcial</span>' : '<span class="badge b-bad">Pendiente</span>'}</div>
+      </div>
+      <div style="text-align:right">
+        <div><b>${pesos(c.monto)}</b></div>
+        ${c.pagado ? `<div class="mut" style="font-size:12px">Pagó: ${pesos(c.pagado)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  abrirModal(`
+    <h2>Plan: ${escapar(cli.n)}</h2>
+    <div class="mut">Capital: ${pesos(p.montoPrestado)} · Total: ${pesos(p.totalDevolver)}</div>
+    <div style="max-height:50vh;overflow-y:auto;margin:12px 0">${filas}</div>
+    <button class="sec" onclick="cerrarModal()" style="width:100%">Cerrar</button>
+  `);
+}
+
+function registrarCobro(prestamoId, numCuota, montoRecibido) {
+  const p = S.prestamos.find(x => x.id === prestamoId);
+  if (!p) return;
+  const cuota = (p.plan || []).find(c => c.num === numCuota);
+  if (!cuota) return;
+
+  cuota.pagado = (cuota.pagado || 0) + montoRecibido;
+  
+  const cli = S.clientes.find(c => c.id === p.clienteId) || { n: 'Cliente', tel: '' };
+
+  S.pagos.push({
+    id: Date.now(),
+    prestamoId,
+    clienteId: p.clienteId,
+    numCuota,
+    monto: montoRecibido,
+    fecha: hoyISO()
+  });
+
+  guardar();
+  dibujar();
+
+  // Comprobante WhatsApp
+  const mensaje = encodeURIComponent(
+    `*RECIBO DE PAGO - ${S.nombreNegocio}*\n` +
+    `--------------------------------\n` +
+    `👤 *Cliente:* ${cli.n}\n` +
+    `📅 *Fecha:* ${fechaLegible(hoyISO())}\n` +
+    `💵 *Monto Abonado:* ${pesos(montoRecibido)}\n` +
+    `🔢 *Cuota:* #${cuota.num} de ${p.numCuotas}\n` +
+    `📌 *Saldo Restante Cuota:* ${pesos(Math.max(0, cuota.monto - cuota.pagado))}\n` +
+    `--------------------------------\n` +
+    `¡Muchas gracias por su pago!`
+  );
+
+  abrirModal(`
+    <h2>¡Cobro Registrado!</h2>
+    <p>Se registraron <b>${pesos(montoRecibido)}</b> para la cuota #${numCuota} de ${escapar(cli.n)}.</p>
+    <div class="f">
+      ${cli.tel ? `<a href="https://wa.me/${cli.tel.replace(/\D/g,'')}?text=${mensaje}" target="_blank" class="button wa-btn" style="display:block;text-align:center;text-decoration:none;padding:12px;border-radius:999px;font-weight:700;flex:1">Enviar Recibo por WhatsApp</a>` : ''}
+      <button class="sec" onclick="cerrarModal()">Listo</button>
+    </div>
+  `);
+}
+
+/* =====================================================================
+   09 · DESPACHO DE EVENTOS
+   ===================================================================== */
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('button, [data-a]');
+  if (!btn) return;
+  const accion = btn.dataset.a;
+
+  if (btn.dataset.t) {
+    UI.pestana = btn.dataset.t;
+    dibujar();
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  if (accion === 'modalNuevoPrestamo') modalNuevoPrestamo();
+  if (accion === 'modalNuevoCliente') modalNuevoCliente();
+  if (accion === 'nuevoPrestamoPara') modalNuevoPrestamo(+btn.dataset.id);
+
+  if (accion === 'crearPrestamoConfirmado') {
+    const cliId = +document.getElementById('pCliente').value;
+    const monto = aNumero(document.getElementById('pMonto').value);
+    const tasa = aNumero(document.getElementById('pTasa').value);
+    const frec = document.getElementById('pFrecuencia').value;
+    const cuotas = parseInt(document.getElementById('pCuotas').value) || 1;
+    const fecha = document.getElementById('pFecha').value || hoyISO();
+    const finde = document.getElementById('pFinde').checked;
+
+    if (!monto || monto <= 0) { aviso('Ingrese un monto válido.'); return; }
+
+    const totalDevolver = Math.round(monto * (1 + tasa / 100));
+    const nuevoP = {
+      id: Date.now(),
+      clienteId: cliId,
+      montoPrestado: monto,
+      tasa: tasa,
+      totalDevolver: totalDevolver,
+      frecuencia: frec,
+      numCuotas: cuotas,
+      fechaInicio: fecha,
+      incluyeFinde: finde
+    };
+    nuevoP.plan = generarCuotas(nuevoP);
+
+    S.prestamos.push(nuevoP);
+    guardar();
+    cerrarModal();
+    dibujar();
+    aviso('Préstamo creado con éxito.');
+  }
+
+  if (accion === 'guardarClienteConfirmado') {
+    const n = document.getElementById('cNombre').value.trim();
+    if (!n) { aviso('El nombre es obligatorio.'); return; }
+    S.clientes.push({
+      id: Date.now(),
+      n,
+      tel: document.getElementById('cTel').value.trim(),
+      dni: document.getElementById('cDni').value.trim(),
+      dir: document.getElementById('cDir').value.trim(),
+      zona: document.getElementById('cZona').value.trim()
+    });
+    guardar();
+    cerrarModal();
+    dibujar();
+    aviso('Cliente guardado.');
+  }
+
+  if (accion === 'cobrarCuota') {
+    registrarCobro(+btn.dataset.p, +btn.dataset.c, +btn.dataset.m);
+  }
+
+  if (accion === 'cobroParcial') {
+    const saldo = +btn.dataset.saldo;
+    const pid = +btn.dataset.p;
+    const cid = +btn.dataset.c;
+    abrirModal(`
+      <h2>Registrar Pago Parcial</h2>
+      <label>Monto recibido (Saldo pendiente: ${pesos(saldo)})</label>
+      <input type="text" id="montoParcial" value="${saldo}" inputmode="decimal">
+      <div class="f" style="margin-top:14px">
+        <button class="sec" onclick="cerrarModal()">Cancelar</button>
+        <button onclick="const m = aNumero(document.getElementById('montoParcial').value); if(m>0){ registrarCobro(${pid}, ${cid}, m); }">Confirmar Cobro</button>
+      </div>
+    `);
+  }
+
+  if (accion === 'verPlan') modalPlanCuotas(+btn.dataset.id);
+
+  if (accion === 'recordarWp') {
+    const tel = btn.dataset.tel.replace(/\D/g, '');
+    const cli = btn.dataset.cli;
+    const m = btn.dataset.m;
+    const v = btn.dataset.v;
+    const texto = encodeURIComponent(`Hola ${cli}, te recordamos desde ${S.nombreNegocio} que hoy vence tu cuota de ${pesos(m)}. Saludos!`);
+    window.open(`https://wa.me/${tel}?text=${texto}`, '_blank');
+  }
+
+  if (accion === 'guardarCajaBase') {
+    S.cajaInicial = aNumero(document.getElementById('cajaBase').value);
+    guardar();
+    dibujar();
+    aviso('Caja base actualizada.');
+  }
+
+  if (accion === 'registrarMovimiento') {
+    const tipo = document.getElementById('movTipo').value;
+    const monto = aNumero(document.getElementById('movMonto').value);
+    const nota = document.getElementById('movNota').value.trim();
+    if (!monto) { aviso('Ingrese un monto válido.'); return; }
+    S.movimientosCaja.push({ id: Date.now(), tipo, monto, nota, fecha: hoyISO() });
+    guardar();
+    dibujar();
+    aviso('Movimiento guardado.');
+  }
+
+  if (accion === 'guardarNombreNegocio') {
+    S.nombreNegocio = document.getElementById('cfgNegocio').value.trim() || 'Mis Préstamos';
+    guardar();
+    aviso('Nombre guardado.');
+  }
+
+  if (accion === 'exportarExcel') generarExcelPréstamos();
+
+  if (accion === 'descargarBackup') {
+    descargarArchivo('copia_prestamos_' + hoyISO() + '.json', JSON.stringify(S, null, 2), 'application/json');
+  }
+
+  if (accion === 'abrirRestaurar') {
+    document.getElementById('archivoBackup').click();
+  }
+});
+
+document.getElementById('archivoBackup').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data && data.prestamos && data.clientes) {
+        S = data;
+        guardar();
+        dibujar();
+        aviso('Datos restaurados correctamente.');
+      } else throw new Error();
+    } catch (_) {
+      aviso('Archivo de copia no válido.');
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('fab').addEventListener('click', () => modalNuevoPrestamo());
+
+/* =====================================================================
+   10 · INICIO
+   ===================================================================== */
+dibujar();
+</script>
+</body>
+</html>
