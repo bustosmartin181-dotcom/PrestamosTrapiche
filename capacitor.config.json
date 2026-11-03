@@ -1,0 +1,6 @@
+{
+  "appId": "com.misprestamos.app",
+  "appName": "Mis Préstamos",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
