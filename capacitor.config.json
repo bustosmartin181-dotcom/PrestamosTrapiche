@@ -1,6 +1,8 @@
 {
-  "appId": "com.misprestamos.app",
-  "appName": "Mis Préstamos",
-  "webDir": "dist",
-  "bundledWebRuntime": false
+  "appId": "com.martin.misprestamos",
+  "appName": "Mis préstamos de Martin",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
 }
