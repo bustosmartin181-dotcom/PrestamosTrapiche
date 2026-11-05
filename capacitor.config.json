@@ -1,9 +1,0 @@
-{
-  "appId": "com.bustos.misprestamos",
-  "appName": "Mis préstamos",
-  "webDir": "www",
-  "backgroundColor": "#F5F1EB",
-  "server": {
-    "androidScheme": "https"
-  }
-}
