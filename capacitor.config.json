@@ -1,6 +1,6 @@
 {
   "appId": "com.martin.misprestamos",
-  "appName": "Mis préstamos de Martin",
+  "appName": "Mis préstamos",
   "webDir": "www",
   "server": {
     "androidScheme": "https"
