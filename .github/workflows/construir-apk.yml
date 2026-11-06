@@ -31,16 +31,26 @@ jobs:
         run: |
           python3 -c "import re;h=open('www/index.html',encoding='utf-8').read();s=re.findall(r'<script>(.*?)</script>',h,re.S);open('/tmp/app.js','w',encoding='utf-8').write(s[-1])"
           node --check /tmp/app.js
-      - name: Crear iconos
+      - name: Crear iconos (usa los tuyos si estan en el repo)
         continue-on-error: true
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq imagemagick
-          convert -size 1024x1024 xc:'#1E5FA8' assets/icon-background.png
-          convert -size 1024x1024 xc:none -fill white -draw 'circle 512,512 512,212' -fill '#1E5FA8' -draw 'circle 512,512 512,272' -fill white -draw 'circle 512,512 512,342' assets/icon-foreground.png
-          convert -size 1024x1024 xc:'#1E5FA8' -fill white -draw 'circle 512,512 512,212' -fill '#1E5FA8' -draw 'circle 512,512 512,272' -fill white -draw 'circle 512,512 512,342' assets/icon-only.png
-          convert -size 2732x2732 xc:'#F5F1EB' -fill '#1E5FA8' -draw 'circle 1366,1366 1366,1066' -fill '#F5F1EB' -draw 'circle 1366,1366 1366,1126' -fill '#1E5FA8' -draw 'circle 1366,1366 1366,1196' assets/splash.png
-          convert -size 2732x2732 xc:'#121614' -fill '#5AA7F5' -draw 'circle 1366,1366 1366,1066' -fill '#121614' -draw 'circle 1366,1366 1366,1126' -fill '#5AA7F5' -draw 'circle 1366,1366 1366,1196' assets/splash-dark.png
+          if [ -f icon-only.png ] && [ -f icon-foreground.png ] && [ -f icon-background.png ]; then
+            echo "Usando los iconos del repositorio"
+            cp icon-only.png icon-foreground.png icon-background.png assets/
+            if [ -f icon-redondo.png ]; then S=icon-redondo.png; else S=icon-only.png; fi
+            convert -size 2732x2732 xc:'#F5F1EB' \( "$S" -resize 640x640 \) -gravity center -composite assets/splash.png
+            convert -size 2732x2732 xc:'#121614' \( "$S" -resize 640x640 \) -gravity center -composite assets/splash-dark.png
+          else
+            echo "No hay iconos en el repo: se crean unos simples"
+            convert -size 1024x1024 xc:'#1E5FA8' assets/icon-background.png
+            convert -size 1024x1024 xc:none -fill white -draw 'circle 512,512 512,212' -fill '#1E5FA8' -draw 'circle 512,512 512,272' -fill white -draw 'circle 512,512 512,342' assets/icon-foreground.png
+            convert -size 1024x1024 xc:'#1E5FA8' -fill white -draw 'circle 512,512 512,212' -fill '#1E5FA8' -draw 'circle 512,512 512,272' -fill white -draw 'circle 512,512 512,342' assets/icon-only.png
+            convert -size 2732x2732 xc:'#F5F1EB' -fill '#1E5FA8' -draw 'circle 1366,1366 1366,1066' -fill '#F5F1EB' -draw 'circle 1366,1366 1366,1126' -fill '#1E5FA8' -draw 'circle 1366,1366 1366,1196' assets/splash.png
+            convert -size 2732x2732 xc:'#121614' -fill '#5AA7F5' -draw 'circle 1366,1366 1366,1066' -fill '#121614' -draw 'circle 1366,1366 1366,1126' -fill '#5AA7F5' -draw 'circle 1366,1366 1366,1196' assets/splash-dark.png
+          fi
+          ls -la assets
       - run: npm install
       - run: npx cap add android
       - name: Generar iconos de Android
