@@ -71,11 +71,12 @@ body.pv #m,body.pv nav{filter:blur(16px)}
 button.x.mini{padding:5px 10px;border:1.5px dashed var(--bd)}
 .acc{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
 @keyframes neonGlow{0%,100%{box-shadow:0 0 14px rgba(245,158,11,.3),0 0 28px rgba(30,95,168,.18);border-color:rgba(245,158,11,.65)}50%{box-shadow:0 0 24px rgba(245,158,11,.55),0 0 44px rgba(30,95,168,.35);border-color:rgba(251,191,36,.95)}}
-.cartel-iluminado{box-shadow:0 0 18px rgba(245,158,11,.35);background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(254,243,199,.88));border:1.8px solid rgba(245,158,11,.8);border-radius:var(--radius);padding:16px;margin-bottom:14px;position:relative;overflow:hidden;transition:opacity .35s ease,transform .35s ease}
+.cartel-iluminado{animation:neonGlow 3s ease-in-out infinite;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(254,243,199,.88));border:1.8px solid rgba(245,158,11,.8);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:all .4s ease}
 :root[data-theme="dark"] .cartel-iluminado{background:linear-gradient(135deg,rgba(30,36,33,.96),rgba(45,34,18,.92))}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .cartel-iluminado{background:linear-gradient(135deg,rgba(30,36,33,.96),rgba(45,34,18,.92))}}
-body.teclado .pill-donar{display:none!important}
 .pill-donar{position:fixed;bottom:92px;left:18px;background:var(--card);border:1.5px solid rgba(245,158,11,.8);box-shadow:0 4px 18px rgba(245,158,11,.3);border-radius:999px;padding:8px 14px;font-size:.8125rem;font-weight:700;display:flex;align-items:center;gap:6px;z-index:11;cursor:pointer}
+.btn-mp{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#009EE3;color:#fff;margin-top:8px}
+.btn-mp svg{flex:none}
+.btn-copiar{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px}
 .timer-bar{height:5px;background:rgba(245,158,11,.2);border-radius:999px;overflow:hidden;margin-top:10px}
 .timer-prog{height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);width:100%;transition:width 1s linear}
 </style></head><body>
@@ -88,7 +89,7 @@ window.addEventListener('error',function(e){var m=document.getElementById('m');i
 window.addEventListener('unhandledrejection',function(e){console.error(e.reason)});
 </script>
 <script>
-const KEY='prestamos_v1',MS=864e5,VERSION='1.3.2';
+const KEY='prestamos_v1',MS=864e5,VERSION='1.3.4';
 const AUTOR='Martín Enrique Bustos',AUTOR_EMAIL='bustosmartin181@gmail.com',AUTOR_WA='5492612168515',AUTOR_ALIAS='MartinchoLujanino';
 const pieCopyright=()=>`<div class="copyright">© 2026 ${AUTOR}</div>`;
 const $=id=>document.getElementById(id);
@@ -140,10 +141,9 @@ function aplicarTema(){const r=document.documentElement,t=S.tema||'auto';
   const osc=t==='oscuro'||(t==='auto'&&matchMedia('(prefers-color-scheme:dark)').matches),p=PAL[S.color]||PAL.azul;
   r.style.setProperty('--ac',osc?p[1]:p[0]);r.style.setProperty('--acx',osc?p[3]:p[2])}
 
-let timerDonacion=null,segDonacion=14,timerPausado=false,cartelYaVisto=false;
-function actualizarPill(){const p=$('donarPill');if(!p)return;p.style.display=(bloqueada||!S.bienvenida||$('cartelDonacion'))?'none':'flex'}
+let timerDonacion=null,segDonacion=14,timerPausado=false;
 function iniciarTimerDonacion(){clearInterval(timerDonacion);const el=$('cartelDonacion');if(!el)return;
-  segDonacion=14;timerPausado=false;cartelYaVisto=true;
+  segDonacion=14;timerPausado=false;
   timerDonacion=setInterval(()=>{if(timerPausado)return;segDonacion--;
     const tTxt=$('cdTimer'),bProg=$('cdProg');
     if(tTxt)tTxt.textContent=segDonacion+'s';
@@ -151,9 +151,9 @@ function iniciarTimerDonacion(){clearInterval(timerDonacion);const el=$('cartelD
     if(segDonacion<=0){clearInterval(timerDonacion);cerrarCartelDisimulado()}
   },1000)}
 function cerrarCartelDisimulado(){const c=$('cartelDonacion');if(c){c.style.opacity='0';c.style.transform='scale(0.96)';setTimeout(()=>c.remove(),350)}
-  setTimeout(actualizarPill,380)}
+  const pill=$('donarPill');if(pill)pill.style.display='flex'}
 function cartelDonacionHTML(){
-  return `<div id="cartelDonacion" class="cartel-iluminado" onmouseenter="timerPausado=true" onmouseleave="timerPausado=false">
+  return `<div id="cartelDonacion" class="cartel-iluminado" onmouseenter="timerPausado=true" onmouseleave="timerPausado=false" ontouchstart="timerPausado=true">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <div style="font-weight:700;font-size:.875rem;color:var(--warn)">✨ ¿Te sirve esta herramienta gratuita?</div>
       <div style="display:flex;align-items:center;gap:6px">
@@ -161,11 +161,11 @@ function cartelDonacionHTML(){
         <button class="x mini" data-a="cerrarCartel" style="padding:2px 6px">✕</button>
       </div>
     </div>
-    <div class="mut" style="font-size:.84rem;line-height:1.35;margin-bottom:8px">Desarrollada por <b>${AUTOR}</b> para ordenar tus cobros sin costo ni anuncios. Podés colaborar con una donación al creador:</div>
-    <div style="background:var(--card);border:1.5px solid rgba(245,158,11,.7);border-radius:12px;padding:9px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
+    <div class="mut" style="font-size:.84rem;line-height:1.35;margin-bottom:8px">Desarrollada por <b>${AUTOR}</b> para ordenar tus cobros sin costo ni anuncios. Si te sirve, podés darme una mano con un aporte:</div>
+    <div style="background:var(--card);border:1.5px solid rgba(245,158,11,.7);border-radius:12px;padding:9px;display:flex;justify-content:space-between;align-items:center;gap:6px">
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--warn);text-transform:uppercase">Alias Mercado Pago / Banco:</div>
-        <div style="font-family:monospace;font-weight:900;font-size:1.05rem">${AUTOR_ALIAS}</div>
+        <div style="font-family:monospace;font-weight:900;font-size:1.15rem">${AUTOR_ALIAS}</div>
       </div>
       <div style="display:flex;gap:4px">
         <button class="mini" data-a="copiarAlias" style="background:#f59e0b;color:#000;font-weight:700">Copiar</button>
@@ -180,16 +180,20 @@ function cartelDonacionHTML(){
   </div>`}
 function modalDonacion(){
   const waMsg=encodeURIComponent('Hola Martín! Te hice una donación a tu alias '+AUTOR_ALIAS+' por la app Mis préstamos. ¡Muchas gracias!');
-  modal(`<h2>☕ Donación al Creador</h2>
-  <div class="mut" style="margin-bottom:12px">Creada por <b>${AUTOR}</b>. Sin publicidad y sin suscripciones. Si te es útil podés transferirle directamente:</div>
+  modal(`<h2>☕ Ayudá al creador</h2>
+  <div class="mut" style="margin-bottom:12px">Hola, soy <b>${AUTOR}</b>. Hice Mis préstamos para que lleves tus cobros y tus cuentas en orden, sin cuadernos ni cálculos a mano, y la comparto gratis y sin publicidad. Los datos de tus clientes quedan solo en tu teléfono. Si te sirve para tu trabajo y querés darme una mano para seguir mejorándola, cualquier aporte suma. ¡Gracias de corazón!</div>
   <div style="background:color-mix(in srgb,var(--ac) 10%,transparent);border:2px solid var(--ac);border-radius:14px;padding:12px;text-align:center;margin-bottom:14px">
     <div style="font-size:11px;font-weight:700;color:var(--mut)">ALIAS (CBU / CVU / MERCADO PAGO)</div>
     <div style="font-family:monospace;font-weight:900;font-size:1.5rem;margin:4px 0">${AUTOR_ALIAS}</div>
     <div style="font-size:11px;color:var(--mut)">Titular: ${AUTOR}</div>
-    <button style="margin-top:8px;width:100%" data-a="copiarAlias">Copiar Alias (${AUTOR_ALIAS})</button>
+    <button class="btn-copiar" data-a="copiarAlias"><span>📋</span> Copiar alias</button>
+    <button class="btn-mp" data-a="abrirMP"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M2 10h20"/><circle cx="17" cy="14.5" r="1.3" fill="#fff"/></svg> Abrir Mercado Pago</button>
+    <div style="font-size:11px;color:var(--mut);margin-top:8px">Al tocar "Abrir Mercado Pago" el alias se copia solo: en la app elegí <b>Transferir</b> y pegalo.</div>
   </div>
   <div class="f" style="flex-wrap:wrap"><a class="bt wa" target="_blank" rel="noopener" href="https://wa.me/${AUTOR_WA}?text=${waMsg}">Avisar a Martín por WhatsApp</a><button class="sec" data-a="cerrar">Cerrar</button></div>`,360)}
 
+async function copiarTexto(t){try{await navigator.clipboard.writeText(t);return true}catch(_){}
+  try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0;top:0';document.body.appendChild(a);a.focus();a.select();const r=document.execCommand('copy');a.remove();return r}catch(_){return false}}
 /* ---------- Ventanas y avisos ---------- */
 function aviso(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),4500)}
 const cerrarModal=()=>document.querySelectorAll('.modal').forEach(x=>x.remove());
@@ -232,7 +236,7 @@ function pHoy(){
   const prox=act.filter(x=>x.i.estado==='aldia'&&dn(x.i.fv)-dn(hoy)<=7).sort((a,b)=>a.i.fv<b.i.fv?-1:1);
   const calle=act.reduce((t,x)=>t+x.i.saldo,0),mes=hoy.slice(0,7),cobMes=S.pagos.filter(x=>x.fecha.slice(0,7)===mes).reduce((t,x)=>t+x.monto,0);
   const tot=L.reduce((t,x)=>t+x.i.total,0),pag=L.reduce((t,x)=>t+x.i.pagado,0),pct=tot>0?pag/tot*100:0;
-  let h=(cartelYaVisto?'':cartelDonacionHTML())+`<div style="margin:4px 2px 12px"><div style="font-size:20px;font-weight:700">${saludo(new Date().getHours())}${S.nombre?', '+esc(S.nombre):''}</div><div class="mut">${atr.length?'Tenés '+atr.length+(atr.length>1?' cobros':' cobro')+' para hoy.':'No hay cobros pendientes hoy.'}${(m=>m?' Mañana vence'+(m>1?'n ':' ')+m+' cuota'+(m>1?'s':'')+'.':'')(prox.filter(x=>dn(x.i.fv)-dn(hoy)===1).length)}</div></div>`;
+  let h=cartelDonacionHTML()+`<div style="margin:4px 2px 12px"><div style="font-size:20px;font-weight:700">${saludo(new Date().getHours())}${S.nombre?', '+esc(S.nombre):''}</div><div class="mut">${atr.length?'Tenés '+atr.length+(atr.length>1?' cobros':' cobro')+' para hoy.':'No hay cobros pendientes hoy.'}${(m=>m?' Mañana vence'+(m>1?'n ':' ')+m+' cuota'+(m>1?'s':'')+'.':'')(prox.filter(x=>dn(x.i.fv)-dn(hoy)===1).length)}</div></div>`;
   if(!S.clientes.length)h+='<div class="card mut">Primero cargá a tus clientes en la pestaña Clientes. Después anotá cada préstamo con el botón ＋.</div>';
   h+=`<div class="card"><div class="mut">Para cobrar hoy</div><div class="hero-fila"><div class="num ${aCobrar>0?'warn':''}">${pesos(aCobrar)}</div>${anillo(pct,aCobrar>0?'var(--warn)':'var(--ok)')}</div><div class="mut">Ya cobraste el ${Math.round(pct)}% de lo que te tienen que devolver en total.</div></div>`;
   if(atr.length)h+='<div class="card"><h2>Cobros de hoy y atrasados</h2>'+atr.map(x=>fila(x.c,'Cuota '+x.i.sig+' · '+diasTxt(dn(hoy)-dn(x.i.fv)),pesos(x.i.atraso),acc(`<button class="mini" data-a="cobrar" data-id="${x.p.id}">Cobrar</button>`,wa(x.c,msgAtr(x,hoy))))).join('')+'</div>';
@@ -299,7 +303,7 @@ function pAjustes(){
   const ch=(a,v,t,sel)=>`<button class="chip ${sel===v?'on':''}" data-a="${a}" data-v="${v}">${t}</button>`;
   return `<div class="cartel-iluminado">
     <div style="font-weight:700;font-size:1rem;color:var(--warn);margin-bottom:4px">☕ Donaciones y Apoyo al Creador</div>
-    <div class="mut" style="margin-bottom:10px">Mis préstamos es gratuita y sin anuncios. Si te es útil para tu día a día, podés apoyar a <b>${AUTOR}</b> con una donación:</div>
+    <div class="mut" style="margin-bottom:10px">Mis préstamos es gratuita y sin anuncios. Si te ayuda a llevar tus cobros al día, podés apoyar a <b>${AUTOR}</b> con un aporte:</div>
     <div style="background:var(--card);border:1.5px solid rgba(245,158,11,.7);border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--warn)">ALIAS BANCARIO / MERCADO PAGO:</div>
@@ -321,13 +325,13 @@ function pAjustes(){
 
 function dibujar(){try{aplicarTema();const nav=document.querySelector('nav'),fab=$('fab'),m=$('m');
   document.body.classList.toggle('sin-degradado',bloqueada||!S.bienvenida);
-  if(bloqueada){nav.style.display=fab.style.display='none';m.innerHTML=pBloqueo();actualizarPill();return}
-  if(!S.bienvenida){nav.style.display=fab.style.display='none';m.innerHTML=(UI.paso>=1?progreso(UI.paso):'')+pBienvenida();actualizarPill();return}
+  if(bloqueada){nav.style.display=fab.style.display='none';m.innerHTML=pBloqueo();return}
+  if(!S.bienvenida){nav.style.display=fab.style.display='none';m.innerHTML=(UI.paso>=1?progreso(UI.paso):'')+pBienvenida();return}
   nav.style.display=fab.style.display='';
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
   const P={hoy:pHoy,clientes:pClientes,prestamos:pPrestamos,caja:pCaja,ajustes:pAjustes};
   m.innerHTML=P[tab]()+pieCopyright();
-  if(tab==='hoy')iniciarTimerDonacion();actualizarPill()}
+  if(tab==='hoy')iniciarTimerDonacion()}
   catch(err){$('m').innerHTML='<div class="card" style="margin-top:14vh"><h2>Algo salió mal</h2><div class="mut">'+esc(err.message||err)+'</div><div class="f" style="margin-top:12px;flex-wrap:wrap"><button data-a="reintentar">Reintentar</button><button class="sec" data-a="borrarTodo">Borrar todo y empezar de cero</button></div></div>'}}
 
 /* ---------- Bienvenida (se ve la primera vez) ---------- */
@@ -374,7 +378,11 @@ const botones=(ok,txt)=>`<div class="f" style="justify-content:flex-end;margin:1
 const A={
   cerrar:()=>cerrarModal(),
   reintentar:()=>dibujar(),
-  copiarAlias(){navigator.clipboard.writeText(AUTOR_ALIAS);aviso('¡Alias '+AUTOR_ALIAS+' copiado!')},
+  async copiarAlias(){if(await copiarTexto(AUTOR_ALIAS))aviso('¡Alias '+AUTOR_ALIAS+' copiado!');else aviso('No se pudo copiar. Alias: '+AUTOR_ALIAS)},
+  async abrirMP(){const ok=await copiarTexto(AUTOR_ALIAS);aviso(ok?'Alias copiado. En Mercado Pago tocá Transferir y pegalo.':'Alias: '+AUTOR_ALIAS);
+    let salio=false;const vis=()=>{if(document.hidden)salio=true};document.addEventListener('visibilitychange',vis);
+    setTimeout(()=>{try{location.href='mercadopago://'}catch(_){}},700);
+    setTimeout(()=>{document.removeEventListener('visibilitychange',vis);if(!salio)window.open('https://www.mercadopago.com.ar','_blank')},3200)},
   cerrarCartel:()=>cerrarCartelDisimulado(),
   abrirDonar:()=>modalDonacion(),
   modalDonar:()=>modalDonacion(),
